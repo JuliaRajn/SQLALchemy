@@ -1,31 +1,21 @@
-from fastapi import APIRouter
-from app.schemas import CreateTask, UpdateTask
-
-router = APIRouter(prefix="/task", tags=["task"])
-
-
-@router.get("/")
-async def all_tasks():
-    return {"message": "Get All Tasks"}
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Index, UniqueConstraint
+from sqlalchemy.orm import relationship
+from sqlalchemy.schema import CreateTable
+from app.backend.db import Base
+from app.models import User
 
 
-@router.get("/{task_id}")
-async def task_by_id(task_id: int):
-    return {"message": f"Get Task by id: {task_id}"}
+class Task(Base):
+    __tablename__ = "tasks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String)
+    content = Column(String)
+    priority = Column(Integer, default=0)
+    completed = Column(Boolean, default=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    slug = Column(String, unique=True, index=True)
+    user = relationship("User", back_populates="tasks")
 
 
-@router.post("/create")
-async def create_task(task: CreateTask):
-    return {"message": "Create Task"}
-
-
-@router.put("/update")
-async def update_task(task: UpdateTask):
-    return {"message": "Update Task"}
-
-
-@router.delete("/delete")
-async def delete_task():
-    return {"message": "Delete Task"}
-
-
+print(CreateTable(Task.__table__))
